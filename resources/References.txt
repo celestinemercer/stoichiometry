@@ -1,0 +1,9 @@
+References
+
+Datafile = AtomicWeights_IsotopicCompositions_NIST_4.1.txt
+Reference = Coursey, J.S., Schwab, D.J., Tsai, J.J., and Dragoset, R.A. (2015), Atomic Weights and Isotopic Compositions (version 4.1). [Online] Available: http://physics.nist.gov/Comp [2017, November, 27]. National Institute of Standards and Technology, Gaithersburg, MD.
+Relevant_Publication = J. Meija et al. Atomic weights of the elements 2013. Pure and Applied Chemistry 88, 265-291 (2016)
+
+Datafile = SelectedGeologicAtomicWeights.txt
+Reference [Si] = M. E. Wieser, M. Berglund. Atomic weights of the elements 2007 (IUPAC Technical Report). Pure Appl. Chem. 81, 2131 (2009).
+Notes [Si] = The IUPAC 2007 standard atomic weight for Si is representative of most geologic materials (given the large uncertainties).
