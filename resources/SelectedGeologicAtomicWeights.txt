@@ -1,0 +1,5 @@
+Atomic Number = 14
+Atomic Symbol = Si
+Mass Number = 28
+Standard Atomic Weight = 28.0855(3)
+Notes = M. E. Wieser, M. Berglund. Pure Appl. Chem. 81, 2131 (2009). 
