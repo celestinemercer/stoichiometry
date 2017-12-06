@@ -9,6 +9,9 @@
 # Copyright (C), 2017
 #
 
+import re # Import module for regular expressions.
+
+# Variables and methods for loading atomic weight information.
 sram_types = {'unknown':'standard relative atomic mass not known',
               'interval':'standard relative atomic mass varies widely in natural materials, so an interval is published',
               'quantity':'standard relative atomic mass given as a value with decisional uncertainties',
@@ -102,4 +105,107 @@ def load_atomic_weights(filepath):
           elems[ce]['SRAM'] = {'Type':'most_stable','value':float(nums[0]),'uncertainty':float(uncert)}
   # Return the element dictionary.
   return elems
+
+# Regular expressions and methods for parsing chemical formulas.
+re_elem = re.compile(r'([A-Z][a-z]?)([0-9]+)?') # elem, with repeats
+re_enor = re.compile(r'([A-Z][a-z]?)')          # elem, no repeats
+re_lpar = re.compile(r'\(')                     # opening left paren
+re_rpar = re.compile(r'\)([0-9]+)?')            # closing right paren, with repeats
+
+def parse_compound(comp):
+  '''
+  Parses the specified chemical compound string and returns a dict of the
+  constituent elements, with the numbers of each element that are present
+  in the compound formula. Calls the rpc helper method.
+  '''
+  return rpc(comp)[0]
+
+def rpc(comp,stack=[],nolp=0):
+  '''
+  Recursive helper function for parse_compound() method.
   
+  Arguments:
+  - comp  - The chemical compound to parse.
+  - stack - List of dicts containing elements and how many of them there are.
+  - nolp  - The number of opening left parentheses that have not been closed.
+  '''
+  # Check for bad input.
+  if not comp:
+    print('Error - cannot parse empty chemical formula.')
+    return
+  # Declare variables for formula fragments. 
+  tail, head, num = [], [], 1
+  # Initialize the stack (if stack == []), or use existing one (e.g., if stack == [{}]).
+  stack = stack or [{}] 
+  # Test chemical formula for RE matches.
+  em = re_elem.match(comp)
+  lm = re_lpar.match(comp)
+  rm = re_rpar.match(comp)
+  if em:
+    head = em.group()
+    tail = comp[len(head):]
+    elem = re_enor.match(head).group()
+    num = 1
+    if len(head) > len(elem):
+      num = int(head[len(elem):])
+    if elem not in stack[-1]:
+      # First time adding this element to the dict.
+      stack[-1][elem] = num
+    else:
+      # Increment number for this element (head).
+      stack[-1][elem] += num
+  elif lm:
+    tail = comp[1:]
+    nolp += 1
+    stack.append({})
+  elif rm:
+    head = rm.group()
+    tail = comp[len(head):]
+    num = 1
+    if len(head) > 1:
+      num = int(head[1:])
+    nolp -= 1
+    if nolp < 0:
+      print('Error - unmatched right parenthesis in formula: {:}'.format(comp))
+    for (k,v) in stack.pop().items():
+      if k not in stack[-1]:
+        # First time adding this element to dict.
+        stack[-1][k] = num*v
+      else:
+        # Increment number for this element.
+        stack[-1][k] += num*v
+  else:
+    print('Error - {:} is an invalid chemical formula.')
+    return
+  # Terminate or continue recursion.
+  if len(tail) > 0:
+    stack = rpc(tail,stack,nolp)
+    return stack
+  else:
+    if nolp > 0:
+      print('Error - unmatched left parenthesis in formula: {:}'.format(comp))
+      return
+    return stack
+
+# Method for getting molecular weight.
+def molecular_weight(comp,sram_lib):
+  '''
+  Computes the molecular weight for the specified chemical compound, using
+  the specified library of standard relative atomic masses. The sram_lib
+  should be imported with the load_atomic_weights method, and modified as
+  needed with the update_sram_lib method.
+  '''
+  # Parse the compound.
+  atoms = parse_compound(comp)
+  # Loop over constituent atoms, summing up the molecular weight.
+  mw = 0.0
+  for (k,v) in atoms.items():
+    if k in sram_lib:
+      if sram_lib[k]['SRAM']['Type'] in ['quantity','most_stable']:
+        mw += sram_lib[k]['SRAM']['value']*v
+      else:
+        print('Standard relative atomic mass for {:} is unknown or published as an interval.'.format(k))
+    else:
+      print('Standard relative atomic mass library missing element: {:}.'.format(k))
+      return
+  return mw

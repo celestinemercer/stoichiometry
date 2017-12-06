@@ -1,2 +1,2 @@
 # stoichiometry
-python library for performing mineral stoichiometry calculations
+A python library for performing mineral stoichiometry calculations.
