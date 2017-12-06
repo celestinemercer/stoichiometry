@@ -1,5 +1,65 @@
+Atomic Number = 1
+Atomic Symbol = H
+Mass Number = 1
+Standard Atomic Weight = 1.00794(7)
+Notes = g, m, r; M. E. Wieser, M. Berglund. Pure Appl. Chem. 81, 2131 (2009). 
+
+Atomic Number = 3
+Atomic Symbol = Li
+Mass Number = 7
+Standard Atomic Weight = 6.941(2)
+Notes = g, m, r; M. E. Wieser, M. Berglund. Pure Appl. Chem. 81, 2131 (2009).
+
+Atomic Number = 5
+Atomic Symbol = B
+Mass Number = 11
+Standard Atomic Weight = 10.811(7)
+Notes = g, m, r; M. E. Wieser, M. Berglund. Pure Appl. Chem. 81, 2131 (2009). 
+
+Atomic Number = 6
+Atomic Symbol = C
+Mass Number = 12
+Standard Atomic Weight = 12.0107(8)
+Notes = g, r; M. E. Wieser, M. Berglund. Pure Appl. Chem. 81, 2131 (2009). 
+
+Atomic Number = 7
+Atomic Symbol = N
+Mass Number = 14
+Standard Atomic Weight = 14.0067(2)
+Notes = g, r; M. E. Wieser, M. Berglund. Pure Appl. Chem. 81, 2131 (2009). 
+
+Atomic Number = 8
+Atomic Symbol = O
+Mass Number = 16
+Standard Atomic Weight = 15.9994(3)
+Notes = g, r; M. E. Wieser, M. Berglund. Pure Appl. Chem. 81, 2131 (2009). 
+
+Atomic Number = 12
+Atomic Symbol = Mg
+Mass Number = 24
+Standard Atomic Weight = 24.3050(6)
+Notes = M. E. Wieser, T. B. Coplen. Pure Appl. Chem. 83, 359 (2010). 
+
 Atomic Number = 14
 Atomic Symbol = Si
 Mass Number = 28
 Standard Atomic Weight = 28.0855(3)
-Notes = M. E. Wieser, M. Berglund. Pure Appl. Chem. 81, 2131 (2009). 
+Notes = r; M. E. Wieser, M. Berglund. Pure Appl. Chem. 81, 2131 (2009). 
+
+Atomic Number = 16
+Atomic Symbol = S
+Mass Number = 32
+Standard Atomic Weight = 32.065(5)
+Notes = g, r; M. E. Wieser, M. Berglund. Pure Appl. Chem. 81, 2131 (2009). 
+
+Atomic Number = 17
+Atomic Symbol = Cl
+Mass Number = 35
+Standard Atomic Weight = 35.453(2)
+Notes = g, m, r; M. E. Wieser, M. Berglund. Pure Appl. Chem. 81, 2131 (2009). 
+
+Atomic Number = 35
+Atomic Symbol = Br
+Mass Number = 79
+Standard Atomic Weight = 79.904(1)
+Notes = M. E. Wieser, T. B. Coplen. Pure Appl. Chem. 83, 359 (2010). 
