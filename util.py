@@ -106,6 +106,16 @@ def load_atomic_weights(filepath):
   # Return the element dictionary.
   return elems
 
+def update_sram_lib(subject,patch):
+  '''
+  Replaces element information stored in the subject sram_lib with that of the
+  patch sram_lib, only for those elements that are present in the patch lib.
+  The updated subject lib is returned.
+  '''
+  for (k,v) in patch.items():
+    subject[k] = v
+  return subject
+
 # Regular expressions and methods for parsing chemical formulas.
 re_elem = re.compile(r'([A-Z][a-z]?)([0-9]+)?') # elem, with repeats
 re_enor = re.compile(r'([A-Z][a-z]?)')          # elem, no repeats
