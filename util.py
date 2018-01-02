@@ -9,7 +9,8 @@
 # Copyright (C), 2017
 #
 
-import re # Import module for regular expressions.
+import numpy as np # Import numpy module.
+import re          # Import module for regular expressions.
 
 # Variables and methods for loading atomic weight information.
 sram_types = {'unknown':'standard relative atomic mass not known',
@@ -219,3 +220,30 @@ def molecular_weight(comp,sram_lib):
       print('Standard relative atomic mass library missing element: {:}.'.format(k))
       return
   return mw
+
+def prompt_options(text,opts):
+  '''
+  Displays a list of options (opts) below the specified prompt text.
+  
+  This method returns the index of the selected option.
+  '''
+  # Display prompt and list options.
+  print('-'*80)
+  print("{:} (select one and press enter):\n".format(text))
+  n = len(opts)
+  fw = int(np.floor(np.log10(n+1))) + 1
+  for i, opt in enumerate(opts):
+    print("[{0:{1}d}] - {2}".format(i+1,fw,opt))
+  # Get user selection:
+  invalid = True
+  while invalid:
+    sel = int(input('\n>> ')) - 1
+    if sel >= 0 and sel < n:
+      # Selection is valid.
+      invalid = False
+      print('') # Prints a blank line.
+    else:
+      # Invalid selection; re-prompt the user.
+      print('Invalid selection; enter a number corresponding to one of the options above.')
+  # Return the selected option index.
+  return sel
