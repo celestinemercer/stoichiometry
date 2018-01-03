@@ -247,3 +247,12 @@ def prompt_options(text,opts):
       print('Invalid selection; enter a number corresponding to one of the options above.')
   # Return the selected option index.
   return sel
+
+def import_dataset():
+  '''
+  Prompt the user for a file path to a dataset they would like to load.
+  '''
+  #
+  path = input('\nspecify file name: ')
+  ds = pd.read_csv(path,'\t',index_col=0) 
+  return path, ds
