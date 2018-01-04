@@ -1,31 +1,40 @@
-# Stoichometry                                                                                                                                           
-# stoichiometry.py                                                                                                                                                
-#                                                                                                                                                        
-# This file contains funcitons to enable interactive stoichometry calculations.                                                                                      
-#                                                                                                                                                        
+# Stoichometry                                                                                                                                          
+# stoichiometry.py
+#                                                                                                                                                       
+# This file contains funcitons to enable interactive stoichometry calculations.
+#                                                                                                                                                       
 # Author(s):
 # - Celeste N. Mercer
-# - Cameron M. Mercer                                                                                                                               
-#                                                                                                                                                        
+# - Cameron M. Mercer
+#                                                                                                                                                       
 # Copyright (C), 2018                                                                                                                                   
 #
 
 import util
 import pandas as pd
+import os
 
+# Define global variables.
+def_prefs_path = 'resources/stoichiometry.prefs'
+prefs = {}
+def_sram_nist_path = 'resources/AtomicWeights_IsotopicCompositions_NIST_4.1.txt'
+def_sram_patch_path = 'resources/SelectedGeologicAtomicWeights.txt'
+sram_lib = {}
 datasets = {}
 
 # start function.
-def start():
+def start(prefs_path=def_prefs_path,sram_nist=def_sram_nist_path,sram_patch=def_sram_patch_path):
   '''
-  The start of the main program loop for performing stoichiometry.
+  The start of the main program loop for performing stoichiometry calculations.
   '''
   # Print welcome message.
-  print('-'*80)
-  print('Welcome to Stoichiometry Calculator 5000!')
-  print('')
+  print('-'*80); print('/\\'*40); print('\\/'*40); print('-'*80)
+  print('\nWelcome to Stoichiometry Calculator 5000!\n')
+  # Perform startup tasks; get access to global variables.
+  global prefs, datasets
+  run_startup_tasks(prefs_path,sram_nist,sram_patch)
   # Define menu options, prepare to loop.
-  opts = ['Import dataset', 'Remove dataset', 'Manual', 'Auto', 'Preferences', 'Exit']
+  opts = ['Import dataset', 'Remove dataset', 'Manual', 'Auto', 'Edit preferences', 'Exit']
   keep_going = True
   while keep_going == True:
     # Present user with main menu options.
@@ -33,8 +42,12 @@ def start():
     # Perform requested action.
     if choice == 0:
       # Load dataset.
-      filename, dataset = util.import_dataset()
-      datasets[filename] = dataset
+      filename, dataset = util.import_dataset(prefs['wdir'],prefs['delimiter'])
+      if filename is not None:
+        print('\nDataset imported: {:}\n'.format(filename))
+        datasets[filename] = dataset
+      else:
+        print('Import dataset aborted.')
     elif choice == 1:
       # Remove dataset.
       print('Removal functionality coming soon... Here are the datasets you have loaded:')
@@ -46,16 +59,19 @@ def start():
       print('Auto calculation options coming soon...')
     elif choice == 4:
       # Edit preferences.
-      print('Editing preferences will come later...')
+      edit_prefs_main(prefs_path)
     elif choice == 5:
       # Exit program.
       keep_going = False
   # Do any cleanup tasks here, after while loop terminates.
+  run_shutdown_tasks(prefs_path)
   print('Thank you, come again soon!')
-  print('-'*80)
+  print('-'*80); print('/\\'*40); print('\\/'*40); print('-'*80)
   
 # manual_calc function. 
 def manual_calc():
+  # Get access to global variables.
+  global prefs, datasets
   # Select active dataset.
   activeKey = None
   if len(datasets) == 0:
@@ -70,7 +86,7 @@ def manual_calc():
     activeKey = list(datasets.keys())[idx]
   active = datasets[activeKey]
   # Prepare to show manual calculation options.
-  manual_opts = ['Anhydrous silicates', 'Hydrous silicates','Non-silicates', 'Return to Main Menu']
+  manual_opts = ['Anhydrous silicates', 'Hydrous silicates','Non-silicates', 'Return to: Main Menu']
   keep_going = True
   while keep_going == True:
     # Show manual calculation options menu.
@@ -89,3 +105,128 @@ def manual_calc():
       # Return to Main Menu.
       keep_going = False
   print('Rock on! Returning to main menu.\n')
+
+# auto_calc function.
+
+
+
+# run_startup_tasks function.
+def run_startup_tasks(prefs_path,nist,patch):
+  # Get access to global variables.
+  global prefs, sram_lib, datasets
+  # Initialize/load preferences.
+  prefs = init_prefs(prefs_path)
+  print('Preferences loaded.')
+  # Load and patch library of standard relative atomic weights (SRAMs).
+  sram_lib = util.load_atomic_weights(nist)
+  patch = util.load_atomic_weights(patch)
+  sram_lib = util.update_sram_lib(sram_lib,patch)
+  print('Standard relative atomic mass library loaded.')
+  print('')
+
+# run_shutdown_tasks function.
+def run_shutdown_tasks(prefs_path):
+  # Get access to global variables.
+  global prefs
+  # Autosave preferences if possible.
+  if prefs['autosave_prefs']:
+    util.write_dict(prefs,os.path.abspath(prefs_path))
+    print('Preferences autosaved.')
+  print('')
+
+# init_prefs function.
+def init_prefs(prefs_path):
+  '''
+  Initializes the default preferences for the stoichiometry program, and
+  loads any preferences that have been saved to the specified file.
+
+  Returns a dictionary of preferences.
+  '''
+  # Define default preferences.
+  dprefs = {'wdir':os.path.abspath('.'),
+            'autosave_prefs':True,
+            'delimiter':'\t'}
+  # Check for preferences file; load it if it exists.
+  lprefs = {}
+  if os.path.isfile(prefs_path):
+    lprefs = util.load_dict(prefs_path)
+  # Supply default preferences that are missing.
+  for key in dprefs.keys():
+    if key not in lprefs:
+      lprefs[key] = dprefs[key]
+  # Return preferences.
+  return lprefs
+
+# edit_prefs_main function.
+def edit_prefs_main(prefs_path):
+  '''
+  Displays the main preference editing menu to the user.
+  '''
+  # Prepare to show main preference editing menu.
+  main_edit_opts = ['General preferences','Manual preferences','Auto preferences','Save preferences',
+                    'Return to: Main Menu']
+  keep_going = True
+  while keep_going == True:
+    # Show main preference editing menu.
+    choice = util.prompt_options('Edit Preferences - Main Menu',main_edit_opts)
+    # Handle user selection.
+    if choice == 0:
+      # General prefs.
+      edit_prefs_general()
+    elif choice == 1:
+      # Manual stoichiometry prefs.
+      print('Manual stoichiometry preferences coming later...')
+    elif choice == 2:
+      # Auto stoichiometry prefs.
+      print('Auto stoichiometry preferences coming later...')
+    elif choice == 3:
+      # Save preferences manually.
+      util.write_dict(prefs,os.path.abspath(prefs_path))
+      print('Preferences saved.\n')
+    elif choice == 4:
+      # Return to Main Menu.
+      keep_going = False
+  print('Rock on! Returning to main menu.\n')
+
+# edit_prefs_general function.
+def edit_prefs_general():
+  '''
+  Allows the user to edit general preferences for the stoichiometry program.
+  '''
+  # Get access to global variables.
+  global prefs
+  # Prepare to show menu.
+  dels = {'\t':'tab',',':'comma'}
+  keep_going = True
+  while keep_going == True:
+    # Show main preference editing menu.
+    general_edit_opts = ['Autosave preferences = {:} (toggle value)'.format(prefs['autosave_prefs']),
+                         'Working directory = {:} (edit)'.format(prefs['wdir']),
+                         'File delimiter = {:} (choose)'.format(dels[prefs['delimiter']]),
+                         'Return to: Edit Preferences - Main Menu']
+    choice = util.prompt_options('Edit General Preferences',general_edit_opts)
+    # Handle user selection.
+    if choice == 0:
+      # Invert boolean value.
+      prefs['autosave_prefs'] = not prefs['autosave_prefs']
+    elif choice == 1:
+      # Prompt for new wdir path.
+      new_wdir = None
+      invalid = True
+      while invalid:
+        print('Enter path to working directory: ')
+        new_wdir = input('>> ')
+        if os.path.isdir(new_wdir):
+          invalid = False
+        else:
+          print('Invalid directory path; please try again.\n')
+      # Save new wdir.
+      prefs['wdir'] = new_wdir
+    elif choice == 2:
+      # Choose file delimiter.
+      idx = util.prompt_options('Select file delimiter',list(dels.values()))
+      prefs['delimiter'] = list(dels.keys())[idx]
+    elif choice == 3:
+      # Return to Main Menu.
+      keep_going = False
+  print('Rock on! Returning to main preferences editor menu.\n')

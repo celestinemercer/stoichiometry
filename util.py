@@ -9,9 +9,11 @@
 # Copyright (C), 2017
 #
 
-import numpy as np # Import numpy module.
-import re          # Import module for regular expressions.
-import pandas as pd
+import numpy as np  # Import numpy module.
+import re           # Import module for regular expressions.
+import pandas as pd # Module for managing large datasets.
+import json         # Module for reading/writing JSON files.
+import os           # Module for performing common OS tasks.
 
 # Variables and methods for loading atomic weight information.
 sram_types = {'unknown':'standard relative atomic mass not known',
@@ -222,14 +224,15 @@ def molecular_weight(comp,sram_lib):
       return
   return mw
 
-def prompt_options(text,opts):
+def prompt_options(text,opts,show_divider=True):
   '''
   Displays a list of options (opts) below the specified prompt text.
   
   This method returns the index of the selected option.
   '''
   # Display prompt and list options.
-  print('-'*80)
+  if show_divider:
+    print('-'*80)
   print("{:} (select one and press enter):\n".format(text))
   n = len(opts)
   fw = int(np.floor(np.log10(n+1))) + 1
@@ -249,11 +252,46 @@ def prompt_options(text,opts):
   # Return the selected option index.
   return sel
 
-def import_dataset():
+# import_dataset function.
+def import_dataset(wdir,delimiter='\t'):
   '''
   Prompt the user for a file path to a dataset they would like to load.
   '''
-  #
-  path = input('\nspecify file name: ')
-  ds = pd.read_csv(path,'\t',index_col=0) 
-  return path, ds
+  # Prompt user for filename.
+  print('Importing file...\nCurrent working directory: {:}\n'.format(wdir))
+  fname = input('Specify file to import: ')
+  path = os.path.join(wdir,fname)
+  if not os.path.isfile(path):
+    print('Whoops! That file doesn\'t exist.')
+    options = ['Yep, I just had a case of the butterfingers...','Nope, I\'ve changed my mind...']
+    choice = prompt_options('Would you like to try entering another filename?',options,False)
+    if choice == 0:
+      # Call method recursively so the user can try again.
+      return import_dataset(wdir)
+    if choice == 1:
+      # Return None to indicate canceled import.
+      return None, None
+  else:
+    ds = pd.read_csv(path,delimiter,index_col=0)
+    return os.path.splitext(fname)[0], ds
+
+# save_dataset function.
+# To write later.
+
+# load_dict function.
+def load_dict(path):
+  '''
+  Loads the contents of the specified json file into a dictionary.
+  '''
+  with open(path,'r') as fp:
+    dat = json.load(fp)
+  return dat
+
+# write_dict function.
+def write_dict(obj,path):
+  '''
+  Writes the contents of the specified dictionary to a json file at the
+  specified path. 
+  '''
+  with open(path,'w') as fp:
+    json.dump(obj,fp)
