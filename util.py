@@ -11,6 +11,7 @@
 
 import numpy as np # Import numpy module.
 import re          # Import module for regular expressions.
+import pandas as pd
 
 # Variables and methods for loading atomic weight information.
 sram_types = {'unknown':'standard relative atomic mass not known',
