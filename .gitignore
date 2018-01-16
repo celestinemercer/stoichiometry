@@ -5,3 +5,6 @@ Scratch/
 *.pyc
 References/
 *.txt
+*.xls
+*.xlsx
+*.prefs
