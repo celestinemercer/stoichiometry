@@ -13,6 +13,7 @@
 import util
 import pandas as pd
 import os
+import stoich_calc
 
 # Define global variables.
 def_prefs_path = 'resources/stoichiometry.prefs'
@@ -41,7 +42,7 @@ def start(prefs_path=def_prefs_path,sram_nist=def_sram_nist_path,sram_patch=def_
     choice = util.prompt_options('Main Menu options', opts)
     # Perform requested action.
     if choice == 0:
-      # Load dataset.
+      # Load dataset. Oxides must be in mixed case format for now.
       filename, dataset = util.import_dataset(prefs['wdir'],prefs['delimiter'])
       if filename is not None:
         print('\nDataset imported: {:}\n'.format(filename))
@@ -94,7 +95,7 @@ def manual_calc():
     # Perform requested action.
     if choice == 0:
       # Anhydrous silicates.
-      print('Anhydrous silicates options coming soon...\n')
+      stoich_calc.anhydrous_silicates_stoich(active, sram_lib)
     elif choice == 1:
       # Hydrous silicates.
       print('Hydrous silicates options coming soon...\n')
