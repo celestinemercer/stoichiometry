@@ -9,11 +9,13 @@
 # Copyright (C), 2017
 #
 
+from mineral_system import MineralSystem
 import numpy as np  # Import numpy module.
 import re           # Import module for regular expressions.
 import pandas as pd # Module for managing large datasets.
 import json         # Module for reading/writing JSON files.
 import os           # Module for performing common OS tasks.
+import glob         # Module for finding files in directories.
 
 # Variables and methods for loading atomic weight information.
 sram_types = {'unknown':'standard relative atomic mass not known',
@@ -277,6 +279,31 @@ def import_dataset(wdir,delimiter='\t'):
 
 # save_dataset function.
 # To write later.
+
+# load_mineral_systems function.
+def load_mineral_systems(dir):
+  '''
+  Loads all mineral systems from the specified directory, and returns a
+  dictionary with the names of the mineral systems as the keys.
+  '''
+  systems = {}
+  mslist = glob.glob(os.path.join(dir,'*.minsys'))
+  for msf in mslist:
+    ms = MineralSystem(msf)
+    systems[ms.getSystemName()] = ms
+  return systems
+
+# filter_mineral_systems function.
+def filter_mineral_systems(systems,hydrous_flag,silicate_flag):
+  '''
+  Filters the specified dictionary of mineral systems and returns a new dictionary
+  containing only those that have the specified hydrous/silicate boolean flags.
+  '''
+  subset = {}
+  for skey in systems.keys():
+    if systems[skey].isHydrous() == hydrous_flag and systems[skey].isSilicate() == silicate_flag:
+      subset[skey] = systems[skey]
+  return subset
 
 # load_dict function.
 def load_dict(path):
