@@ -20,11 +20,14 @@ def_prefs_path = 'resources/stoichiometry.prefs'
 prefs = {}
 def_sram_nist_path = 'resources/AtomicWeights_IsotopicCompositions_NIST_4.1.txt'
 def_sram_patch_path = 'resources/SelectedGeologicAtomicWeights.txt'
+def_minsys_dir = 'resources/mineral_systems'
 sram_lib = {}
 datasets = {}
+min_systems = {}
 
 # start function.
-def start(prefs_path=def_prefs_path,sram_nist=def_sram_nist_path,sram_patch=def_sram_patch_path):
+def start(prefs_path=def_prefs_path,sram_nist=def_sram_nist_path,
+          sram_patch=def_sram_patch_path,minsys_dir=def_minsys_dir):
   '''
   The start of the main program loop for performing stoichiometry calculations.
   '''
@@ -33,7 +36,7 @@ def start(prefs_path=def_prefs_path,sram_nist=def_sram_nist_path,sram_patch=def_
   print('\nWelcome to Stoichiometry Calculator 5000!\n')
   # Perform startup tasks; get access to global variables.
   global prefs, datasets
-  run_startup_tasks(prefs_path,sram_nist,sram_patch)
+  run_startup_tasks(prefs_path,sram_nist,sram_patch,minsys_dir)
   # Define menu options, prepare to loop.
   opts = ['Import dataset', 'Remove dataset', 'Manual', 'Auto', 'Edit preferences', 'Exit']
   keep_going = True
@@ -72,7 +75,7 @@ def start(prefs_path=def_prefs_path,sram_nist=def_sram_nist_path,sram_patch=def_
 # manual_calc function. 
 def manual_calc():
   # Get access to global variables.
-  global prefs, datasets
+  global prefs, datasets, min_systems
   # Select active dataset.
   activeKey = None
   if len(datasets) == 0:
@@ -95,7 +98,7 @@ def manual_calc():
     # Perform requested action.
     if choice == 0:
       # Anhydrous silicates.
-      stoich_calc.anhydrous_silicates_stoich(active, sram_lib)
+      stoich_calc.anhydrous_silicates_stoich(active, sram_lib, min_systems)
     elif choice == 1:
       # Hydrous silicates.
       print('Hydrous silicates options coming soon...\n')
@@ -112,9 +115,9 @@ def manual_calc():
 
 
 # run_startup_tasks function.
-def run_startup_tasks(prefs_path,nist,patch):
+def run_startup_tasks(prefs_path,nist,patch,minsys_dir):
   # Get access to global variables.
-  global prefs, sram_lib, datasets
+  global prefs, sram_lib, datasets, min_systems
   # Initialize/load preferences.
   prefs = init_prefs(prefs_path)
   print('Preferences loaded.')
@@ -123,6 +126,12 @@ def run_startup_tasks(prefs_path,nist,patch):
   patch = util.load_atomic_weights(patch)
   sram_lib = util.update_sram_lib(sram_lib,patch)
   print('Standard relative atomic mass library loaded.')
+  # Load mineral systems.
+  min_systems = util.load_mineral_systems(minsys_dir)
+  if min_systems is not None and len(min_systems) > 0:
+    print('Mineral systems loaded (N = {:}).'.format(len(min_systems)))
+  else:
+    print('Warning: no mineral systems were loaded.')
   print('')
 
 # run_shutdown_tasks function.
