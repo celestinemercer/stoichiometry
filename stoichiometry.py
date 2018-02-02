@@ -48,19 +48,19 @@ def start(prefs_path=def_prefs_path,sram_nist=def_sram_nist_path,
       # Load dataset. Oxides must be in mixed case format for now.
       filename, dataset = util.import_dataset(prefs['wdir'],prefs['delimiter'])
       if filename is not None:
-        print('\nDataset imported: {:}\n'.format(filename))
+        print('Dataset imported: {:}\n'.format(filename))
         datasets[filename] = dataset
       else:
-        print('Import dataset aborted.')
+        print('Import dataset aborted.\n')
     elif choice == 1:
       # Remove dataset.
-      print('Removal functionality coming soon... Here are the datasets you have loaded:')
+      print('Removal functionality coming soon...\n')
     elif choice == 2:
       # Manual calculation options.
       manual_calc()
     elif choice == 3:
       # Auto calculation options.
-      print('Auto calculation options coming soon...')
+      print('Auto calculation options coming soon...\n')
     elif choice == 4:
       # Edit preferences.
       edit_prefs_main(prefs_path)
@@ -116,8 +116,9 @@ def manual_calc():
 
 # run_startup_tasks function.
 def run_startup_tasks(prefs_path,nist,patch,minsys_dir):
-  # Get access to global variables.
+  # Get access to global variables; clear them on startup.
   global prefs, sram_lib, datasets, min_systems
+  prefs, sram_lib, datasets, min_systems = {}, {}, {}, {}
   # Initialize/load preferences.
   prefs = init_prefs(prefs_path)
   print('Preferences loaded.')
@@ -220,16 +221,21 @@ def edit_prefs_general():
       # Invert boolean value.
       prefs['autosave_prefs'] = not prefs['autosave_prefs']
     elif choice == 1:
+      # Track line count.
+      lc = 0
       # Prompt for new wdir path.
       new_wdir = None
       invalid = True
       while invalid:
-        print('Enter path to working directory: ')
-        new_wdir = input('>> ')
+        print('Current working directory: {:}'.format(prefs['wdir']))
+        new_wdir = input('\nEnter new working directory: ')
+        lc += 3
         if os.path.isdir(new_wdir):
           invalid = False
+          util.clear_stdout_lines(lc)
         else:
           print('Invalid directory path; please try again.\n')
+          lc += 2
       # Save new wdir.
       prefs['wdir'] = new_wdir
     elif choice == 2:
