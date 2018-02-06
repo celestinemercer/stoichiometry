@@ -9,17 +9,21 @@
 # Copyright (C), 2017
 #
 
+from mineral_system import MineralSystem
 import numpy as np  # Import numpy module.
 import re           # Import module for regular expressions.
 import pandas as pd # Module for managing large datasets.
 import json         # Module for reading/writing JSON files.
-import os           # Module for performing common OS tasks.
+import os, sys      # Modules for performing common OS and system tasks.
+import glob         # Module for finding files in directories.
 
 # Variables and methods for loading atomic weight information.
 sram_types = {'unknown':'standard relative atomic mass not known',
               'interval':'standard relative atomic mass varies widely in natural materials, so an interval is published',
               'quantity':'standard relative atomic mass given as a value with decisional uncertainties',
               'most_stable':'standard relative atomic mass is that of the most stable isotope of the element of interest'}
+CURSOR_UP_ONE = '\x1b[1A'
+DELETE_LINE = '\x1b[2K'
 
 def load_atomic_weights(filepath):
   '''
@@ -230,14 +234,19 @@ def prompt_options(text,opts,show_divider=True):
   
   This method returns the index of the selected option.
   '''
+  # Track line count.
+  lc = 0
   # Display prompt and list options.
   if show_divider:
     print('-'*80)
+    lc += 1
   print("{:} (select one and press enter):\n".format(text))
+  lc += 2
   n = len(opts)
   fw = int(np.floor(np.log10(n+1))) + 1
   for i, opt in enumerate(opts):
     print("[{0:{1}d}] - {2}".format(i+1,fw,opt))
+    lc += 1
   # Get user selection:
   invalid = True
   while invalid:
@@ -249,6 +258,9 @@ def prompt_options(text,opts,show_divider=True):
     else:
       # Invalid selection; re-prompt the user.
       print('Invalid selection; enter a number corresponding to one of the options above.')
+    lc += 3
+  # Clear the menu from stdout.
+  clear_stdout_lines(lc)
   # Return the selected option index.
   return sel
 
@@ -257,26 +269,60 @@ def import_dataset(wdir,delimiter='\t'):
   '''
   Prompt the user for a file path to a dataset they would like to load.
   '''
+  # Track line count.
+  lc = 0
   # Prompt user for filename.
   print('Importing file...\nCurrent working directory: {:}\n'.format(wdir))
   fname = input('Specify file to import: ')
+  lc += 4
   path = os.path.join(wdir,fname)
   if not os.path.isfile(path):
     print('Whoops! That file doesn\'t exist.')
+    lc += 2
     options = ['Yep, I just had a case of the butterfingers...','Nope, I\'ve changed my mind...']
     choice = prompt_options('Would you like to try entering another filename?',options,False)
     if choice == 0:
       # Call method recursively so the user can try again.
       return import_dataset(wdir)
     if choice == 1:
+      # Clear the menu from stdout.
+      clear_stdout_lines(lc)
       # Return None to indicate canceled import.
       return None, None
   else:
+    # Read in file.
     ds = pd.read_csv(path,delimiter,index_col=0)
+    # Clear the menu from stdout, then return dataset.
+    clear_stdout_lines(lc)
     return os.path.splitext(fname)[0], ds
 
 # save_dataset function.
 # To write later.
+
+# load_mineral_systems function.
+def load_mineral_systems(dir):
+  '''
+  Loads all mineral systems from the specified directory, and returns a
+  dictionary with the names of the mineral systems as the keys.
+  '''
+  systems = {}
+  mslist = glob.glob(os.path.join(dir,'*.minsys'))
+  for msf in mslist:
+    ms = MineralSystem(msf)
+    systems[ms.getSystemName()] = ms
+  return systems
+
+# filter_mineral_systems function.
+def filter_mineral_systems(systems,hydrous_flag,silicate_flag):
+  '''
+  Filters the specified dictionary of mineral systems and returns a new dictionary
+  containing only those that have the specified hydrous/silicate boolean flags.
+  '''
+  subset = {}
+  for skey in systems.keys():
+    if systems[skey].isHydrous() == hydrous_flag and systems[skey].isSilicate() == silicate_flag:
+      subset[skey] = systems[skey]
+  return subset
 
 # load_dict function.
 def load_dict(path):
@@ -295,3 +341,12 @@ def write_dict(obj,path):
   '''
   with open(path,'w') as fp:
     json.dump(obj,fp)
+
+# clear_stdout_lines function.
+def clear_stdout_lines(line_count):
+  '''
+  Removes the specified number of lines from standard output (e.g., ipython in Terminal).
+  '''
+  for i in range(line_count):
+    sys.stdout.write(CURSOR_UP_ONE)
+    sys.stdout.write(DELETE_LINE)

@@ -1,10 +1,18 @@
+from mineral_system import MineralSystem
 import util
 
 # anhydrous_silicates_stoich function.
-def anhydrous_silicates_stoich(dataset,sram_lib):
-  # TEMPORARY: hard coded dict of oxides to look for.
-  feldspar = ['SiO2', 'TiO2', 'Al2O3', 'FeO', 'MgO', 'MnO', 'CaO', 'Na2O', 'K2O']
+def anhydrous_silicates_stoich(dataset,sram_lib,min_systems):
+  # Prompt user to select mineral system.
+  anhydrous_silicate_systems = util.filter_mineral_systems(min_systems,False,True)
+  syslist = list(anhydrous_silicate_systems.keys())
+  idx = util.prompt_options('Please select a mineral system',syslist)
+  asms = anhydrous_silicate_systems[syslist[idx]]
+  print('You chose the {:} mineral system.'.format(asms.getSystemName()))
+  print('The basis of anionic units is: {:}\n'.format(asms.getAnionBasis()))
+#  feldspar = ['SiO2', 'TiO2', 'Al2O3', 'FeO', 'MgO', 'MnO', 'CaO', 'Na2O', 'K2O']
   # Prompt user for number of oxygens.
+  '''
   print('\nPlease enter the basis of oxygens:')
   invalid = True
   num_oxy = []
@@ -19,12 +27,13 @@ def anhydrous_silicates_stoich(dataset,sram_lib):
       print('Please enter an integer value.')
   # Prompt user to select a mineral system.
   # Implement later... assume feldspar for now...
+  '''
   
   # Gather list of oxides that exist in the dataset, and in the selected mineral system.
   cols = list(dataset.columns)
   active_cols = {}
   # outer for loop
-  for ox in feldspar:
+  for ox in asms.getOxideList():
     # inner for loop
     for cname in cols:
       if ox in cname:
@@ -56,7 +65,7 @@ def anhydrous_silicates_stoich(dataset,sram_lib):
       cidx = list(anion_props.columns).index(colname)
       if anion_props.iloc[r,cidx] > 0: # This makes sure to avoid empty values.
         temp_sum += anion_props.iloc[r,cidx]
-    factors.append(num_oxy/temp_sum)
+    factors.append(asms.getAnionBasis()/temp_sum)
   # Determine number of cations (cation proportions * factors).
   new_colnames = list(formula_cations.columns)
   for r in range(len(cation_props)):
@@ -68,7 +77,11 @@ def anhydrous_silicates_stoich(dataset,sram_lib):
       if cation_props.iloc[r,cidx] > 0: # This makes sure to avoid empty values.
         formula_cations.iloc[r,cidx] = cation_props.iloc[r,cidx]*factors[r]
         temp_sum += formula_cations.iloc[r,cidx]
-        new_colnames[cidx] = '{:}/{:} O'.format(elements[0],num_oxy)
+        new_colnames[cidx] = '{:}/{:} Anions'.format(elements[0],asms.getAnionBasis())
     formula_cations.iloc[r,list(formula_cations.columns).index('Total')] = temp_sum
   formula_cations.columns = new_colnames
   print(formula_cations)
+
+# hydrous_silicates_stoick function.
+
+# non_silicates_stoich function.
