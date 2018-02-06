@@ -23,6 +23,7 @@ def_sram_patch_path = 'resources/SelectedGeologicAtomicWeights.txt'
 def_minsys_dir = 'resources/mineral_systems'
 sram_lib = {}
 datasets = {}
+results = {}
 min_systems = {}
 
 # start function.
@@ -35,10 +36,10 @@ def start(prefs_path=def_prefs_path,sram_nist=def_sram_nist_path,
   print('-'*80); print('/\\'*40); print('\\/'*40); print('-'*80)
   print('\nWelcome to Stoichiometry Calculator 5000!\n')
   # Perform startup tasks; get access to global variables.
-  global prefs, datasets
+  global prefs, datasets, results
   run_startup_tasks(prefs_path,sram_nist,sram_patch,minsys_dir)
   # Define menu options, prepare to loop.
-  opts = ['Import dataset', 'Remove dataset', 'Manual', 'Auto', 'Edit preferences', 'Exit']
+  opts = ['Import dataset', 'Remove dataset', 'Export results', 'Manual', 'Auto', 'Edit preferences', 'Exit']
   keep_going = True
   while keep_going == True:
     # Present user with main menu options.
@@ -56,15 +57,31 @@ def start(prefs_path=def_prefs_path,sram_nist=def_sram_nist_path,
       # Remove dataset.
       print('Removal functionality coming soon...\n')
     elif choice == 2:
+      # Export results.
+      results_list = list(results.keys())
+      selection = util.prompt_options('Specify results to export', results_list)
+      res_name = results_list[selection]
+      target = os.path.join(prefs['wdir'], res_name + '.stoichres')
+      ok2save = False
+      if os.path.isfile(target):
+        print('Warning: there is already a file named {:} in the working directory.'.format(res_name + '.stoichres'))
+        yesno = input('Would you like to overwrite the file? (y/n) >> ')
+        if yesno == 'y':
+          ok2save = True
+      else:
+        ok2save = True
+      if ok2save:
+        results[res_name].to_csv(target,prefs['delimiter'])
+    elif choice == 3:
       # Manual calculation options.
       manual_calc()
-    elif choice == 3:
+    elif choice == 4:
       # Auto calculation options.
       print('Auto calculation options coming soon...\n')
-    elif choice == 4:
+    elif choice == 5:
       # Edit preferences.
       edit_prefs_main(prefs_path)
-    elif choice == 5:
+    elif choice == 6:
       # Exit program.
       keep_going = False
   # Do any cleanup tasks here, after while loop terminates.
@@ -75,7 +92,7 @@ def start(prefs_path=def_prefs_path,sram_nist=def_sram_nist_path,
 # manual_calc function. 
 def manual_calc():
   # Get access to global variables.
-  global prefs, datasets, min_systems
+  global prefs, datasets, results, min_systems
   # Select active dataset.
   activeKey = None
   if len(datasets) == 0:
@@ -98,7 +115,7 @@ def manual_calc():
     # Perform requested action.
     if choice == 0:
       # Anhydrous silicates.
-      stoich_calc.anhydrous_silicates_stoich(active, sram_lib, min_systems)
+      results[activeKey] = stoich_calc.anhydrous_silicates_stoich(active, sram_lib, min_systems)
     elif choice == 1:
       # Hydrous silicates.
       print('Hydrous silicates options coming soon...\n')
@@ -108,7 +125,6 @@ def manual_calc():
     elif choice == 3:
       # Return to Main Menu.
       keep_going = False
-  print('Rock on! Returning to main menu.\n')
 
 # auto_calc function.
 

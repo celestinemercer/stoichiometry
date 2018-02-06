@@ -9,26 +9,7 @@ def anhydrous_silicates_stoich(dataset,sram_lib,min_systems):
   idx = util.prompt_options('Please select a mineral system',syslist)
   asms = anhydrous_silicate_systems[syslist[idx]]
   print('You chose the {:} mineral system.'.format(asms.getSystemName()))
-  print('The basis of anionic units is: {:}\n'.format(asms.getAnionBasis()))
-#  feldspar = ['SiO2', 'TiO2', 'Al2O3', 'FeO', 'MgO', 'MnO', 'CaO', 'Na2O', 'K2O']
-  # Prompt user for number of oxygens.
-  '''
-  print('\nPlease enter the basis of oxygens:')
-  invalid = True
-  num_oxy = []
-  while invalid == True:
-    num_oxy = input('\n>> ') 
-    try:
-      # Convert num_oxy from string to integer.
-      num_oxy = int(num_oxy)
-      invalid = False
-    except:
-      # Invalid selection, prompt for an integer.
-      print('Please enter an integer value.')
-  # Prompt user to select a mineral system.
-  # Implement later... assume feldspar for now...
-  '''
-  
+  print('The number of anions per formula unit is: {:}\n'.format(asms.getAnionsPerFormulaUnit()))
   # Gather list of oxides that exist in the dataset, and in the selected mineral system.
   cols = list(dataset.columns)
   active_cols = {}
@@ -48,7 +29,6 @@ def anhydrous_silicates_stoich(dataset,sram_lib,min_systems):
   for colname in active_cols.keys():
     # Calculate molecular weight and parse compound.
     weight = util.molecular_weight(active_cols[colname],sram_lib)
-    print('oxide = {:}\tweight = {:}'.format(active_cols[colname],weight))
     element_counts = util.parse_compound(active_cols[colname])
     elements = list(element_counts.keys())
     # Calculate molecular proportions.
@@ -65,7 +45,7 @@ def anhydrous_silicates_stoich(dataset,sram_lib,min_systems):
       cidx = list(anion_props.columns).index(colname)
       if anion_props.iloc[r,cidx] > 0: # This makes sure to avoid empty values.
         temp_sum += anion_props.iloc[r,cidx]
-    factors.append(asms.getAnionBasis()/temp_sum)
+    factors.append(asms.getAnionsPerFormulaUnit()/temp_sum)
   # Determine number of cations (cation proportions * factors).
   new_colnames = list(formula_cations.columns)
   for r in range(len(cation_props)):
@@ -77,10 +57,12 @@ def anhydrous_silicates_stoich(dataset,sram_lib,min_systems):
       if cation_props.iloc[r,cidx] > 0: # This makes sure to avoid empty values.
         formula_cations.iloc[r,cidx] = cation_props.iloc[r,cidx]*factors[r]
         temp_sum += formula_cations.iloc[r,cidx]
-        new_colnames[cidx] = '{:}/{:} Anions'.format(elements[0],asms.getAnionBasis())
+        new_colnames[cidx] = '{:}/{:} Anions'.format(elements[0],asms.getAnionsPerFormulaUnit())
     formula_cations.iloc[r,list(formula_cations.columns).index('Total')] = temp_sum
   formula_cations.columns = new_colnames
-  print(formula_cations)
+  # Report success.
+  print('Stoichiometric calculations are complete.\n')
+  return formula_cations
 
 # hydrous_silicates_stoick function.
 

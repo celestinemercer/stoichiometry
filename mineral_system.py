@@ -21,6 +21,7 @@ class MineralSystem(object):
     self.silicate = None
     self.oxides = None
     self.anions = None
+    self.apfu = None
     self.endmembers = None
     # Read definition file, parse the contents, and overwrite instance variables.
     with open(filepath,'r') as f:
@@ -31,30 +32,32 @@ class MineralSystem(object):
       for i in range(len(items)):
         items[i] = items[i].strip()
       # Store information to instance variables.
-      if items[0] == 'System Name':
+      if items[0].lower() == 'system name':
         self.system_name = items[1]
-      elif items[0] == 'Hydrous':
+      elif items[0].lower() == 'hydrous':
         self.hydrous = items[1].lower() == 'true'
-      elif items[0] == 'Silicate':
+      elif items[0].lower() == 'silicate':
         self.silicate = items[1].lower() == 'true'
-      elif items[0] == 'Oxides':
+      elif items[0].lower() == 'oxides':
         temp_oxides = items[1].split(',')
         for i in range(len(temp_oxides)):
           temp_oxides[i] = temp_oxides[i].strip()
         self.oxides = temp_oxides
-      elif items[0] == 'Anions':
+      elif items[0].lower() == 'anions':
         temp_anions = items[1].split(',')
         for i in range(len(temp_anions)):
           temp_anions[i] = temp_anions[i].strip()
         self.anions = temp_anions
-      elif items[0] == 'Endmembers':
-        temp_endmembers = items[1].split(',')
+      elif items[0].lower() == 'anions per formula unit':
+        self.apfu = int(items[1])
+      elif items[0].lower() == 'endmembers':
+        temp_endmembers = items[1].split(';')
         for i in range(len(temp_endmembers)):
           temp_endmembers[i] = temp_endmembers[i].strip()
         self.endmembers = temp_endmembers
     # Check that all instance variables have been initialized.
-    if None in [self.system_name,self.hydrous,self.silicate,self.oxides,self.anions,self.endmembers]:
-      raise RuntimeException('Failed to load mineral system from: {:}'.format(filepath))
+    if None in [self.system_name,self.hydrous,self.silicate,self.oxides,self.anions,self.apfu,self.endmembers]:
+      raise RuntimeError('Failed to load mineral system from: {:}'.format(filepath))
   
   # Instance methods.
   
@@ -78,15 +81,9 @@ class MineralSystem(object):
   def getAnionList(self):
     return self.anions
   
-  # getAnionBasis method.
-  def getAnionBasis(self):
-    # Count anions present in first endmember. Assume that all endmembers have the same basis for now.
-    elems = util.parse_compound(self.endmembers[0])
-    anion_count = 0
-    for ai in self.anions:
-      if ai in elems.keys():
-        anion_count += elems[ai]
-    return anion_count
+  # getAnionsPerFormulaUnit method.
+  def getAnionsPerFormulaUnit(self):
+    return self.apfu
   
   # getEndmembers method.
   def getEndmemberList(self):
