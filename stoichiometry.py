@@ -74,6 +74,7 @@ def start(prefs_path=def_prefs_path,sram_nist=def_sram_nist_path,
         results[res_name].to_csv(target,prefs['delimiter'])
     elif choice == 3:
       # Manual calculation options.
+      print('Manual stoichiometry calculations:')
       manual_calc()
     elif choice == 4:
       # Auto calculation options.
@@ -118,7 +119,8 @@ def manual_calc():
       results[activeKey] = stoich_calc.anhydrous_silicates_stoich(active, sram_lib, min_systems)
     elif choice == 1:
       # Hydrous silicates.
-      print('Hydrous silicates options coming soon...\n')
+      print('Hydrous silicates options coming very soon...\n')
+#      results[activeKey] = stoich_calc.hydrous_silicates_stoich(active, sram_lib, min_systems)
     elif choice == 2:
       # Non-silicates.
       print('Non-silicates options coming soon...\n')
