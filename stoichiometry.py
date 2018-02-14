@@ -119,8 +119,7 @@ def manual_calc():
       results[activeKey] = stoich_calc.anhydrous_silicates_stoich(active, sram_lib, min_systems)
     elif choice == 1:
       # Hydrous silicates.
-      print('Hydrous silicates options coming very soon...\n')
-#      results[activeKey] = stoich_calc.hydrous_silicates_stoich(active, sram_lib, min_systems)
+      results[activeKey] = stoich_calc.hydrous_silicates_stoich(active, sram_lib, min_systems)
     elif choice == 2:
       # Non-silicates.
       print('Non-silicates options coming soon...\n')

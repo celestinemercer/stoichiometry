@@ -22,17 +22,12 @@ def hydrous_silicates_stoich(dataset,sram_lib,min_systems):
   hsms = prompt_min_sys(min_systems,True,True)
   active_cols = find_active_columns(dataset,hsms)
   # Normalize anhydrous oxides.
-
-  # Call helper function here that returns the dataset with normalized values.
-  
+  normalized_dataset = normalize_anhydrous_oxides(dataset,active_cols,hsms)
   # Perform stoichiometry calculations.
-  formula_cations = calc_cations_per_formula_unit(dataset,active_cols,hsms,sram_lib)
+  formula_cations = calc_cations_per_formula_unit(normalized_dataset,active_cols,hsms,sram_lib)
   # Report success.
   print('Hydrous stoichiometric calculations complete.\n')
   return formula_cations
-
-# non_silicates_stoich function.
-
 
 # --------------------------------------------------------------------------------
 # Common functions.
@@ -97,13 +92,29 @@ def new_results_dataframe(dataset,active_cols,min_sys,intermediate=True):
   return pd.DataFrame(data,rnames,cnames)
 
 # normalize_anhydrous_oxides function.
-def normalize_anhydrous_oxides(dataset,min_sys):
+def normalize_anhydrous_oxides(dataset,active_cols,min_sys):
   '''
-  Normalizes the anhydrous oxides in the specified dataset.
+  Normalizes the anhydrous oxides in the specified dataset. Returns a copy of the
+  specified dataset with the anhydrous oxides normalized to 100.
   '''
-  # Add code here.
-  pass
-  #return normalized dataset here.
+  normalized_dataset = dataset.copy()
+  # Collect column indices.
+  col_indices = []
+  for colname in active_cols.keys():
+    col_indices.append(list(normalized_dataset.columns).index(colname))
+  # Normalize one analysis at a time.
+  for r in range(len(normalized_dataset)):
+    temp_sum = 0.0
+    for cidx in col_indices:
+      if normalized_dataset.iloc[r,cidx] > 0.0: # This makes sure the avoid empty values.
+        temp_sum += normalized_dataset.iloc[r,cidx]
+    if temp_sum > 0.0:
+      norm_factor = 100.0/temp_sum
+    else: 
+      print('WARNING: No data for analysis: {:}'.format(normalized_dataset.index[r]))
+    for cidx in col_indices:
+      normalized_dataset.iloc[r,cidx] *= norm_factor
+  return normalized_dataset
 
 # calc_cations_per_formula_unit function.
 def calc_cations_per_formula_unit(dataset,active_cols,min_sys,sram_lib):
@@ -128,20 +139,22 @@ def calc_cations_per_formula_unit(dataset,active_cols,min_sys,sram_lib):
     anion_props[colname] = molecular_props[colname]*element_counts[elements[1]]
     # Calculate atomic proportion of cation from each molecule. (Cation proportion)
     cation_props[colname] = molecular_props[colname]*element_counts[elements[0]]
+  # Collect column indices.
+  col_indices = []
+  for colname in active_cols.keys():
+    col_indices.append(list(anion_props.columns).index(colname))
   # Determine conversion factors from anions.
   factors = []
   for r in range(len(anion_props)):
     temp_sum = 0.0
-    for colname in active_cols.keys():
-      cidx = list(anion_props.columns).index(colname)
-      if anion_props.iloc[r,cidx] > 0: # This makes sure to avoid empty values.
+    for cidx in col_indices:
+      if anion_props.iloc[r,cidx] > 0.0: # This makes sure to avoid empty values.
         temp_sum += anion_props.iloc[r,cidx]
     factors.append(min_sys.getAnionsPerFormulaUnit()/temp_sum)
   # Determine number of cations (cation proportions * factors).
   for r in range(len(cation_props)):
     temp_sum = 0.0
-    for colname in active_cols.keys():
-      cidx = list(cation_props.columns).index(colname)
+    for cidx in col_indices:
       element_counts = util.parse_compound(active_cols[colname])
       elements = list(element_counts.keys())
       if cation_props.iloc[r,cidx] > 0: # This makes sure to avoid empty values.
